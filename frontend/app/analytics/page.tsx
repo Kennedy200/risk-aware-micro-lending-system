@@ -8,7 +8,7 @@ import { TrendingUp, ShieldCheck, Zap, Activity, Info, PlayCircle } from 'lucide
 import { Button } from '@/components/ui/button';
 
 // ✅ DYNAMIC API CONFIGURATION
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = 'https://risk-lending-backend.onrender.com';
 
 // ✅ OPTIMIZATION: Lazy load heavy Recharts components
 const UtilityChart = dynamic(() => import('@/components/charts/UtilityChart'), {
