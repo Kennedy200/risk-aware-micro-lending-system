@@ -7,6 +7,9 @@ import { Card } from '@/components/ui/card';
 import { TrendingUp, ShieldCheck, Zap, Activity, Info, PlayCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// ✅ DYNAMIC API CONFIGURATION
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 // ✅ OPTIMIZATION: Lazy load heavy Recharts components
 const UtilityChart = dynamic(() => import('@/components/charts/UtilityChart'), {
   loading: () => <div className="h-[300px] w-full bg-slate-900/50 animate-pulse rounded-xl" />,
@@ -52,7 +55,8 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch('http://localhost:8000/metrics');
+        // ✅ FIXED: Using dynamic URL
+        const response = await fetch(`${API_BASE_URL}/metrics`);
         const data = await response.json();
         setMetrics(data);
       } catch (error) {
@@ -68,7 +72,8 @@ export default function AnalyticsPage() {
   const runLiveSimulation = async () => {
     setSimData((prev: any) => ({ ...prev, isSimulating: true }));
     try {
-      const response = await fetch('http://localhost:8000/run-simulation');
+      // ✅ FIXED: Using dynamic URL
+      const response = await fetch(`${API_BASE_URL}/run-simulation`);
       const data = await response.json();
       setSimData({ ...data, isSimulating: false });
     } catch (error) {
@@ -79,7 +84,7 @@ export default function AnalyticsPage() {
 
   // Logic for Dynamic Bar Heights
   const maxVal = Math.max(simData.rule_based_profit, simData.ai_utility_profit, 1);
-  const ruleBarHeight = (simData.rule_based_profit / maxVal) * 180; // Scale relative to 180px container
+  const ruleBarHeight = (simData.rule_based_profit / maxVal) * 180;
   const aiBarHeight = (simData.ai_utility_profit / maxVal) * 180;
 
   return (
@@ -100,7 +105,7 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* 1. KPI CARDS (Connected to Live Metrics) */}
+        {/* 1. KPI CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="glass p-6 border-slate-800 bg-slate-900/40 relative overflow-hidden group">
             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 opacity-50"></div>
@@ -131,7 +136,7 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* 2. LIVE COMPARATIVE ANALYSIS BOX (Now with Simulation Button) */}
+        {/* 2. LIVE COMPARATIVE ANALYSIS */}
         <Card className="p-6 md:p-10 bg-blue-600/5 border-blue-500/20 border-2 rounded-[2rem] backdrop-blur-xl relative group">
           <div className="absolute top-4 right-4 animate-pulse"><Zap className="w-4 h-4 text-blue-500" /></div>
           <div className="flex flex-col md:flex-row justify-between items-center gap-16">
@@ -141,7 +146,6 @@ export default function AnalyticsPage() {
                   <div className="p-2 bg-blue-600/10 rounded-lg"><ShieldCheck className="text-blue-500 w-6 h-6" /></div>
                   <h3 className="text-xl md:text-2xl font-bold tracking-tight">Comparative Analysis: AI vs. Legacy Rules</h3>
                 </div>
-                {/* NEW: LIVE SIMULATION BUTTON */}
                 <Button
                   onClick={runLiveSimulation}
                   disabled={simData.isSimulating}
@@ -163,7 +167,6 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            {/* DYNAMIC BARS SECTION */}
             <div className="flex items-end justify-center w-full md:w-auto gap-8 md:gap-12 h-56 px-0 md:px-12 border-t md:border-t-0 md:border-l border-white/5 pt-8 md:pt-0 mt-2 md:mt-0 relative min-w-[unset] md:min-w-[320px]">
               <div className="flex flex-col items-center group">
                 <div
@@ -187,7 +190,7 @@ export default function AnalyticsPage() {
           </div>
         </Card>
 
-        {/* 3. FULL CHARTS GRID  */}
+        {/* 3. FULL CHARTS GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <Card className="glass p-8 border-slate-800 bg-slate-900/40 rounded-3xl">
             <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
@@ -204,7 +207,7 @@ export default function AnalyticsPage() {
           </Card>
         </div>
 
-        {/* 4. CONFUSION MATRIX GRID */}
+        {/* 4. PERFORMANCE MATRIX */}
         <Card className="glass p-8 border-slate-800 bg-slate-900/40 rounded-3xl">
           <h2 className="text-xl font-bold mb-8 uppercase tracking-widest text-slate-500">Model Performance Matrix</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
@@ -220,7 +223,7 @@ export default function AnalyticsPage() {
           </div>
         </Card>
 
-        {/* 5. MODEL INFO FOOTER  */}
+        {/* 5. INFO FOOTER */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-6 border-t border-white/5 opacity-60">
           <div className="flex gap-4 items-start">
             <div className="p-2 bg-slate-900 rounded-xl"><Info className="w-4 h-4 text-slate-400" /></div>
