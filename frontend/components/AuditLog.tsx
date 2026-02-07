@@ -5,10 +5,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useState, useEffect } from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 
-// --- DYNAMIC API CONFIGURATION ---
-// When you deploy, Vercel will use NEXT_PUBLIC_API_URL. 
-// Locally, it defaults to localhost:8000.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+// ✅ HARDCODED API URL FOR PRODUCTION
+const API_BASE_URL = 'https://risk-lending-backend.onrender.com';
 
 interface AuditEntry {
   id: number;
@@ -24,7 +22,7 @@ export const AuditLog = ({ decision }: { decision: any }) => {
 
   const fetchLogs = async () => {
     try {
-      // Using dynamic API_BASE_URL instead of hardcoded localhost
+      // ✅ FIXED: Using live Render URL
       const response = await fetch(`${API_BASE_URL}/audit-summary`);
       if (!response.ok) throw new Error("API Response Error");
       
@@ -45,7 +43,7 @@ export const AuditLog = ({ decision }: { decision: any }) => {
       return;
     }
     try {
-      // Using dynamic API_BASE_URL for search
+      // ✅ FIXED: Using live Render URL
       const res = await fetch(`${API_BASE_URL}/search?query=${query}`);
       if (!res.ok) throw new Error("Search Error");
       const data = await res.json();
