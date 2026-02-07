@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { Card } from '@/components/ui/card';
-import { Search, ChevronDown, Database, ShieldCheck, Wallet, Scale, Zap, Calendar } from 'lucide-react';
+import { Search, ChevronDown, Database, Wallet, Scale, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// ✅ HARDCODED API URL FOR PRODUCTION
+const API_BASE_URL = 'https://risk-lending-backend.onrender.com';
 
 export default function AuditLogsPage() {
   const [data, setData] = useState<any>(null);
@@ -15,7 +18,8 @@ export default function AuditLogsPage() {
 
   const fetchAuditData = async () => {
     try {
-      const response = await fetch('http://localhost:8000/audit-summary');
+      // ✅ FIXED: Using live Render URL
+      const response = await fetch(`${API_BASE_URL}/audit-summary`);
       const result = await response.json();
       setData(result);
     } catch (error) {
@@ -29,15 +33,13 @@ export default function AuditLogsPage() {
     fetchAuditData();
   }, []);
 
-  // Filter logic: Search restricted to FICO and Timestamp (Date)
-
   const filteredLogs = data?.logs && Array.isArray(data.logs)
     ? data.logs.filter((log: any) => {
       const matchesFilter = activeFilter === 'ALL' || log.decision === activeFilter;
       const s = searchQuery.toLowerCase();
       const matchesSearch = searchQuery === "" ||
-        log.fico.toString().includes(s) ||
-        log.timestamp.toLowerCase().includes(s);
+        log.fico?.toString().includes(s) ||
+        log.timestamp?.toLowerCase().includes(s);
       return matchesFilter && matchesSearch;
     })
     : [];
@@ -58,15 +60,15 @@ export default function AuditLogsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="glass p-6 border-slate-800 bg-slate-900/40">
             <p className="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest">Total Transactions</p>
-            <p className="text-4xl font-black">{loading ? "..." : data?.total}</p>
+            <p className="text-4xl font-black">{loading ? "..." : (data?.total ?? 0)}</p>
           </Card>
           <Card className="glass p-6 border-slate-800 bg-slate-900/40">
             <p className="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest">Approval Rate</p>
-            <p className="text-4xl font-black text-blue-500">{loading ? "..." : `${data?.approval_rate}%`}</p>
+            <p className="text-4xl font-black text-blue-500">{loading ? "..." : `${data?.approval_rate ?? 0}%`}</p>
           </Card>
           <Card className="glass p-6 border-slate-800 bg-slate-900/40">
             <p className="text-[10px] text-slate-500 uppercase font-black mb-2 tracking-widest">Avg. Utility Score</p>
-            <p className="text-4xl font-black text-green-500">{loading ? "..." : data?.avg_utility}</p>
+            <p className="text-4xl font-black text-green-500">{loading ? "..." : (data?.avg_utility ?? '0.00')}</p>
           </Card>
         </div>
 
@@ -99,7 +101,7 @@ export default function AuditLogsPage() {
           </div>
         </div>
 
-        {/* 3. TRANSACTION LEDGER WITH DROPDOWN PARAMETERS */}
+        {/* 3. TRANSACTION LEDGER */}
         <div className="space-y-3">
           <p className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-2">Historical Records</p>
 
@@ -124,19 +126,16 @@ export default function AuditLogsPage() {
                       <span className="text-sm font-black text-white block tracking-tighter">TXN-{String(log.id).padStart(5, '0')}</span>
                       <span className="text-[10px] text-slate-500 font-mono mt-1 block uppercase">{log.timestamp}</span>
                     </div>
-
                     <div className="w-32 hidden md:block">
                       <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">FICO</span>
                       <span className="text-base font-black">{log.fico}</span>
                     </div>
-
                     <div className="w-32 hidden md:block">
                       <span className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Utility</span>
                       <span className={cn("text-base font-black font-mono", log.utility > 0 ? "text-blue-400" : "text-red-500")}>
                         {log.utility > 0 ? `+${log.utility}` : log.utility}
                       </span>
                     </div>
-
                     <div className="flex-1 flex justify-end items-center gap-6">
                       <div className={cn(
                         "px-4 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border",
@@ -144,12 +143,11 @@ export default function AuditLogsPage() {
                       )}>
                         {log.decision}
                       </div>
-                      <ChevronDown className={cn("w-4 h-4 text-slate-700 group-hover:text-slate-400 transition-transform", expandedId === log.id && "rotate-180")} />
+                      <ChevronDown className={cn("w-4 h-4 text-slate-700 transition-transform", expandedId === log.id && "rotate-180")} />
                     </div>
                   </div>
                 </Card>
 
-                {/* EXPANDABLE PARAMETERS SECTION */}
                 {expandedId === log.id && (
                   <div className="mx-2 p-6 bg-black/40 border border-slate-800 rounded-2xl grid grid-cols-2 lg:grid-cols-4 gap-8 animate-in slide-in-from-top-2 duration-300">
                     <div className="space-y-1">
@@ -165,8 +163,8 @@ export default function AuditLogsPage() {
                       <p className="text-sm font-black text-white">${log.loan_amnt?.toLocaleString()}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-2"><Zap className="w-3 h-3" /> Risk-Aversion (λ)</p>
-                      <p className="text-sm font-black text-blue-400">{log.risk_lambda}</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase flex items-center gap-2"><Zap className="w-3 h-3" /> Utility</p>
+                      <p className="text-sm font-black text-blue-400">{log.utility}</p>
                     </div>
                   </div>
                 )}
